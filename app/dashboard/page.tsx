@@ -8,7 +8,7 @@ import {
   MessageSquare, LogOut, Phone, MessageCircle, Calendar, User, IndianRupee, Save,
   Network, Plus, UserCheck, X, Ticket, ChevronLeft, Send, Mic, Star, Moon, Sun,
   MapPin, Mail, Edit3, CheckCircle2, Clock, Trash2, ClipboardList, Search, Filter,
-  ShoppingCart, Package, UserPlus, Video, Upload
+  ShoppingCart, Package, UserPlus, Video, PhoneOff
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
@@ -81,6 +81,8 @@ function DashboardContent() {
 
   // --- TWILIO BROWSER PHONE STATES ---
   const [callStatus, setCallStatus] = useState('Idle'); // 'Idle', 'Calling', 'In Progress'
+  const [isCallOverlayOpen, setIsCallOverlayOpen] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
   const deviceRef = useRef<any>(null); // Holds the active Twilio call session
 
   // New Expanded Lead Form State
@@ -108,6 +110,25 @@ function DashboardContent() {
   useEffect(() => {
     if (selectedLead) scrollToBottom();
   }, [selectedLead?.followUps]);
+
+  // CALL TIMER EFFECT
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (callStatus === 'In Progress') {
+      interval = setInterval(() => {
+        setCallDuration((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setCallDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [callStatus]);
+
+  const formatDuration = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   let myTeamLead = "Unassigned";
   teams.forEach((t: any) => {
@@ -903,64 +924,53 @@ function DashboardContent() {
 
                       {/* --- LAPTOP SOFTPHONE CALL BUTTON --- */}
                       <div className="flex space-x-2 md:space-x-4">
-                        {callStatus === 'Idle' ? (
-                          <button 
-                            onClick={async () => {
-                              if (!selectedLead?.phone) return alert("No phone number found!");
-                              setCallStatus('Calling');
-                              
-                              try {
-                                // 1. Get the security token from your backend
-                                const res = await fetch('/api/token');
-                                const data = await res.json();
+                        <button 
+                          onClick={async () => {
+                            if (!selectedLead?.phone) return alert("No phone number found!");
+                            
+                            // Open Call UI immediately
+                            setCallStatus('Calling');
+                            setIsCallOverlayOpen(true);
+                            
+                            try {
+                              const res = await fetch('/api/token');
+                              const data = await res.json();
 
-                                // 2. Initialize the Twilio Browser Phone
-                                const { Device } = await import('@twilio/voice-sdk');
-                                const device = new Device(data.token);
-                                await device.register();
-                                deviceRef.current = device;
+                              const { Device } = await import('@twilio/voice-sdk');
+                              const device = new Device(data.token);
+                              await device.register();
+                              deviceRef.current = device;
 
-                                // 3. Format the number for India
-                                let formattedPhone = selectedLead.phone.replace(/\s+/g, '').replace(/-/g, '');
-                                if (!formattedPhone.startsWith('+')) {
-                                  formattedPhone = formattedPhone.startsWith('0') ? `+91${formattedPhone.substring(1)}` : `+91${formattedPhone}`;
-                                }
-
-                                // 4. Start the Call! (This asks for Mic permissions)
-                                const call = await device.connect({ params: { To: formattedPhone } });
-
-                                call.on('accept', () => setCallStatus('In Progress'));
-                                call.on('disconnect', () => setCallStatus('Idle'));
-                                call.on('error', (err: any) => {
-                                  alert(`Call failed: ${err.message}`);
-                                  setCallStatus('Idle');
-                                });
-
-                              } catch (err) {
-                                console.error(err);
-                                alert("Failed to access microphone or connect to Twilio.");
-                                setCallStatus('Idle');
+                              let formattedPhone = selectedLead.phone.replace(/\s+/g, '').replace(/-/g, '');
+                              if (!formattedPhone.startsWith('+')) {
+                                formattedPhone = formattedPhone.startsWith('0') ? `+91${formattedPhone.substring(1)}` : `+91${formattedPhone}`;
                               }
-                            }}
-                            className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-blue-900/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200'}`}
-                          >
-                            <Mic className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2" />
-                            <b>Browser Call</b>
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => {
-                              if (deviceRef.current) {
-                                deviceRef.current.disconnectAll(); // Hangs up the call
+
+                              const call = await device.connect({ params: { To: formattedPhone } });
+
+                              call.on('accept', () => setCallStatus('In Progress'));
+                              call.on('disconnect', () => {
                                 setCallStatus('Idle');
-                              }
-                            }}
-                            className="cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base bg-red-500/20 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse"
-                          >
-                            <Phone className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2" />
-                            <b>{callStatus === 'Calling' ? 'Connecting...' : 'Hang Up'}</b>
-                          </button>
-                        )}
+                                setTimeout(() => setIsCallOverlayOpen(false), 2000); // close overlay shortly after hangup
+                              });
+                              call.on('error', (err: any) => {
+                                alert(`Call failed: ${err.message}`);
+                                setCallStatus('Idle');
+                                setIsCallOverlayOpen(false);
+                              });
+
+                            } catch (err) {
+                              console.error(err);
+                              alert("Failed to access microphone or connect to Twilio.");
+                              setCallStatus('Idle');
+                              setIsCallOverlayOpen(false);
+                            }
+                          }}
+                          className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-blue-900/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200'}`}
+                        >
+                          <Mic className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2" />
+                          <b>Browser Call</b>
+                        </button>
 
                         <button className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-green-900/20 text-green-400 border-green-500/30' : 'bg-green-50 text-green-700 border-green-200'}`}>
                           <MessageCircle className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2 cursor-pointer" />
@@ -1012,6 +1022,41 @@ function DashboardContent() {
           )}
         </div>
       </main>
+
+      {/* FULL SCREEN ACTIVE CALL OVERLAY */}
+      {isCallOverlayOpen && selectedLead && (
+        <div className="fixed inset-0 bg-black/95 z-[200] flex flex-col items-center justify-center p-4 animate-fadeIn">
+          
+          <div className={`w-32 h-32 rounded-full flex items-center justify-center text-5xl font-bold text-white mb-8 shadow-lg ${callStatus === 'Calling' ? 'bg-purple-600 animate-pulse' : 'bg-green-500'}`}>
+            {selectedLead.name.charAt(0).toUpperCase()}
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 text-center">{selectedLead.name}</h2>
+          <p className="text-gray-400 text-lg md:text-xl mb-12 tracking-wider">{selectedLead.phone}</p>
+          
+          <div className="text-xl md:text-2xl text-white mb-16 font-medium text-center h-10">
+            {callStatus === 'Calling' && <span className="text-yellow-400 animate-pulse">Ringing...</span>}
+            {callStatus === 'In Progress' && <span className="text-green-400">Connected • {formatDuration(callDuration)}</span>}
+            {callStatus === 'Idle' && <span className="text-red-400">Call Ended</span>}
+          </div>
+
+          <div className="flex space-x-6">
+            <button 
+               onClick={() => {
+                 if (deviceRef.current) {
+                   deviceRef.current.disconnectAll();
+                 }
+                 setCallStatus('Idle');
+                 setIsCallOverlayOpen(false);
+               }}
+               className="cursor-pointer w-20 h-20 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(220,38,38,0.4)] transition-all transform hover:scale-105"
+            >
+               <PhoneOff className="w-8 h-8" />
+            </button>
+          </div>
+          
+        </div>
+      )}
 
       {/* ADMIN TEAM MODALS */}
       {isAddTeamModalOpen && isAdmin && (
