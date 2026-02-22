@@ -75,6 +75,13 @@ function DashboardContent() {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [isEditingTicket, setIsEditingTicket] = useState(false);
   const [newFollowUpNote, setNewFollowUpNote] = useState('');
+  
+  // Search Query State
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // --- NEW: TWILIO BROWSER PHONE STATES ---
+  const [callStatus, setCallStatus] = useState('Idle'); // 'Idle', 'Calling', 'In Progress'
+  const deviceRef = useRef<any>(null); // Holds the active Twilio call session
 
   // New Expanded Lead Form State
   const [newLeadForm, setNewLeadForm] = useState({
@@ -278,6 +285,7 @@ function DashboardContent() {
     } catch (err) { alert("Error submitting salesform"); }
   };
 
+  // --- TEAM HANDLERS ---
   const handleSaveNewTeam = async () => {
     if (!newTeam.tlEmail) return alert("Select a Team Lead!");
     const tlUser = registeredUsers.find((u: any) => u.email === newTeam.tlEmail);
@@ -320,15 +328,29 @@ function DashboardContent() {
   };
 
   const handleLogout = () => { sessionStorage.removeItem('loginTime'); router.push('/'); };
+  const hours = Math.floor(workingMinutes / 60);
+  const minutes = workingMinutes % 60;
 
-  // --- DYNAMIC DATA AGGREGATION FOR DASHBOARD ---
+  // --- DYNAMIC DATA AGGREGATION & SEARCH FILTERING ---
   const activeTickets = leadsList.filter((lead: any) => !lead.isSolved);
+  
+  const filteredActiveTickets = activeTickets.filter((lead: any) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      (lead.name && lead.name.toLowerCase().includes(query)) ||
+      (lead.ticketId && lead.ticketId.toLowerCase().includes(query)) ||
+      (lead.date && lead.date.toLowerCase().includes(query)) ||
+      (lead.phone && lead.phone.includes(query)) ||
+      (lead.schedule && lead.schedule.toLowerCase().includes(query))
+    );
+  });
+
   const solvedTicketsCount = leadsList.filter((l:any) => l.isSolved).length;
   const canEditOrSolve = isAdmin || (selectedLead?.employeeName === name);
   const alreadyAssignedEmails = teams.flatMap((team: any) => team.employees.map((emp: any) => emp.email));
   const baseAvailableEmployees = registeredUsers.filter((user: any) => !alreadyAssignedEmails.includes(user.email) && user.email !== newTeam.tlEmail);
 
-  // Dynamic Pie Chart Data (Count leads by status)
   const statusCounts = leadsList.reduce((acc: any, lead: any) => {
     acc[lead.callStatus] = (acc[lead.callStatus] || 0) + 1;
     return acc;
@@ -337,7 +359,6 @@ function DashboardContent() {
     name: key, value: statusCounts[key]
   }));
 
-  // Dynamic Bar Chart Data (Count leads by budget - simple mock aggregation)
   const budgetCounts = leadsList.reduce((acc: any, lead: any) => {
     const b = lead.budget || 'Unknown';
     acc[b] = (acc[b] || 0) + 1;
@@ -426,7 +447,6 @@ function DashboardContent() {
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Action 1: Add Team (Admin Only) */}
                   {isAdmin && (
                     <div className={`p-6 rounded-2xl border flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1 shadow-sm ${theme.card} ${theme.divider}`}>
                        <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
@@ -437,8 +457,6 @@ function DashboardContent() {
                        <button onClick={() => setIsAddTeamModalOpen(true)} className="cursor-pointer px-6 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white text-sm font-bold rounded-full transition-colors w-full">+ Add Team</button>
                     </div>
                   )}
-
-                  {/* Action 2: Add Lead */}
                   <div className={`p-6 rounded-2xl border flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1 shadow-sm ${theme.card} ${theme.divider}`}>
                      <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
                        <UserPlus className="w-6 h-6" />
@@ -447,8 +465,6 @@ function DashboardContent() {
                      <p className={`text-xs mb-5 h-8 ${theme.textSub}`}>Connect with potential customers</p>
                      <button onClick={() => { setActiveView('leads'); setIsAddLeadModalOpen(true); }} className="cursor-pointer px-6 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white text-sm font-bold rounded-full transition-colors w-full">+ Add site visit</button>
                   </div>
-
-                  {/* Action 3: Reports */}
                   <div className={`p-6 rounded-2xl border flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1 shadow-sm ${theme.card} ${theme.divider}`}>
                      <div className="w-12 h-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
                        <BarChart3 className="w-6 h-6" />
@@ -628,7 +644,7 @@ function DashboardContent() {
                       <span>TL: {team.tlName}</span>
                       {isAdmin && (
                         <div className="flex space-x-3">
-                          <button onClick={() => { setEditingTeam({ ...team, employees: [...team.employees] }); setIsEditTeamModalOpen(true); }} className="cursor-pointer hover:opacity-70" title="Edit Team">
+                          <button onClick={() => { setEditingTeam({...team, employees: [...team.employees]}); setIsEditTeamModalOpen(true); }} className="cursor-pointer hover:opacity-70" title="Edit Team">
                             <Edit3 className="w-4 h-4 cursor-pointer" />
                           </button>
                           <button onClick={() => handleDeleteTeam(team._id)} className="cursor-pointer text-red-500 hover:text-red-700 transition-colors" title="Delete Team">
@@ -701,21 +717,33 @@ function DashboardContent() {
             <div className="max-w-7xl mx-auto animate-fadeIn h-full flex flex-col">
               {!selectedLead ? (
                 <>
-                  <div className="flex justify-between items-center mb-4 md:mb-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
                     <h1 className={`text-xl md:text-2xl font-bold ${theme.textMain}`}>Site Visits</h1>
-                    <button onClick={() => setIsAddLeadModalOpen(true)} className="cursor-pointer px-3 md:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs md:text-sm font-medium transition-colors shadow-sm flex items-center">
-                      <Plus className="w-4 h-4 md:mr-2" /> <span className="hidden sm:inline">Site Visit</span>
-                    </button>
+                    <div className="flex w-full sm:w-auto space-x-3">
+                       <div className={`relative flex-1 sm:w-64 flex items-center ${theme.card} rounded-lg border ${theme.divider} px-3 py-2`}>
+                         <Search className={`w-4 h-4 ${theme.textSub} mr-2`} />
+                         <input
+                           type="text"
+                           placeholder="Search name, ID, date..."
+                           value={searchQuery}
+                           onChange={(e) => setSearchQuery(e.target.value)}
+                           className={`w-full bg-transparent outline-none text-sm ${theme.inputText} placeholder:${theme.textSub}`}
+                         />
+                       </div>
+                       <button onClick={() => setIsAddLeadModalOpen(true)} className="cursor-pointer px-3 md:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs md:text-sm font-medium transition-colors shadow-sm flex items-center flex-shrink-0">
+                         <Plus className="w-4 h-4 md:mr-2" /> <span className="hidden sm:inline">Site Visit</span>
+                       </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {activeTickets.map((lead: any) => (
+                    {filteredActiveTickets.map((lead: any) => (
                       <div key={lead._id} onClick={() => { setSelectedLead(lead); setEditForm(lead); setIsEditingTicket(false); setIsSalesformOpen(false); }} className={`cursor-pointer rounded-xl shadow-sm border p-4 md:p-5 transition-all hover:border-purple-500/50 ${theme.card} ${theme.divider}`}>
                         <div className="flex justify-between items-start mb-2">
                           <span className={`text-xs font-bold px-2 py-1 rounded-md ${theme.brandSoftBg} ${theme.brandText}`}>
                             {lead.ticketId || `TKT-${lead._id ? lead._id.toString().slice(-4).toUpperCase() : 'OLD'}`}
                           </span>
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 border rounded-full ${getStatusStyles(lead.callStatus, isDarkMode)}`}>{lead.callStatus}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 border rounded-full ${getStatusStyles(lead.callStatus, isDarkMode)}`}>{lead.callStatus}</span>
                         </div>
                         <h3 className={`text-lg md:text-xl font-bold mt-1 ${theme.textMain} truncate`}>{lead.name}</h3>
                         <p className={`text-xs md:text-sm mb-4 ${theme.textSub} truncate`}>{lead.phone}</p>
@@ -733,7 +761,7 @@ function DashboardContent() {
                         </div>
                       </div>
                     ))}
-                    {activeTickets.length === 0 && <p className={theme.textSub}>No site visits found.</p>}
+                    {filteredActiveTickets.length === 0 && <p className={theme.textSub}>No site visits found matching "{searchQuery}".</p>}
                   </div>
                 </>
               ) : (
@@ -784,6 +812,7 @@ function DashboardContent() {
                   </div>
 
                   <div className={`flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden ${customScrollbar}`}>
+                    
                     <div className={`w-full md:w-7/12 flex-shrink-0 md:flex-shrink p-4 md:p-8 border-b md:border-b-0 md:border-r md:overflow-y-auto ${theme.divider} ${customScrollbar}`}>
 
                       {!isEditingTicket && !isSalesformOpen && (
@@ -872,9 +901,71 @@ function DashboardContent() {
                         </div>
                       )}
 
+                      {/* --- LAPTOP SOFTPHONE CALL BUTTON --- */}
                       <div className="flex space-x-2 md:space-x-4">
-                        <button className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-blue-900/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200'}`}><Mic className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2 cursor-pointer" /><b>IVR Call</b></button>
-                        <button className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-green-900/20 text-green-400 border-green-500/30' : 'bg-green-50 text-green-700 border-green-200'}`}><MessageCircle className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2 cursor-pointer" /><b>Send WhatsApp</b></button>
+                        {callStatus === 'Idle' ? (
+                          <button 
+                            onClick={async () => {
+                              if (!selectedLead?.phone) return alert("No phone number found!");
+                              setCallStatus('Calling');
+                              
+                              try {
+                                // 1. Get the security token from your backend
+                                const res = await fetch('/api/token');
+                                const data = await res.json();
+
+                                // 2. Initialize the Twilio Browser Phone
+                                const { Device } = await import('@twilio/voice-sdk');
+                                const device = new Device(data.token, { codecPreferences: ['opus', 'pcmu'] });
+                                await device.register();
+                                deviceRef.current = device;
+
+                                // 3. Format the number for India
+                                let formattedPhone = selectedLead.phone.replace(/\s+/g, '').replace(/-/g, '');
+                                if (!formattedPhone.startsWith('+')) {
+                                  formattedPhone = formattedPhone.startsWith('0') ? `+91${formattedPhone.substring(1)}` : `+91${formattedPhone}`;
+                                }
+
+                                // 4. Start the Call! (This asks for Mic permissions)
+                                const call = await device.connect({ params: { To: formattedPhone } });
+
+                                call.on('accept', () => setCallStatus('In Progress'));
+                                call.on('disconnect', () => setCallStatus('Idle'));
+                                call.on('error', (err: any) => {
+                                  alert(`Call failed: ${err.message}`);
+                                  setCallStatus('Idle');
+                                });
+
+                              } catch (err) {
+                                console.error(err);
+                                alert("Failed to access microphone or connect to Twilio.");
+                                setCallStatus('Idle');
+                              }
+                            }}
+                            className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-blue-900/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200'}`}
+                          >
+                            <Mic className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2" />
+                            <b>Browser Call</b>
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => {
+                              if (deviceRef.current) {
+                                deviceRef.current.disconnectAll(); // Hangs up the call
+                                setCallStatus('Idle');
+                              }
+                            }}
+                            className="cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base bg-red-500/20 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse"
+                          >
+                            <Phone className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2" />
+                            <b>{callStatus === 'Calling' ? 'Connecting...' : 'Hang Up'}</b>
+                          </button>
+                        )}
+
+                        <button className={`cursor-pointer flex-1 py-3 md:py-4 rounded-xl border transition-colors hover:opacity-80 flex flex-col items-center justify-center text-sm md:text-base ${isDarkMode ? 'bg-green-900/20 text-green-400 border-green-500/30' : 'bg-green-50 text-green-700 border-green-200'}`}>
+                          <MessageCircle className="w-5 h-5 md:w-8 h-8 mb-1 md:mb-2 cursor-pointer" />
+                          <b>Send WhatsApp</b>
+                        </button>
                       </div>
                     </div>
 
@@ -938,7 +1029,7 @@ function DashboardContent() {
               </select>
               <div className="flex justify-between mb-2">
                 <label className={`text-xs font-bold ${theme.textSub}`}>Assign Employees</label>
-                <button onClick={() => setNewTeam({ ...newTeam, employees: [...newTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Employees</button>
+                <button onClick={() => setNewTeam({ ...newTeam, employees: [...newTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Row</button>
               </div>
               {newTeam.employees.map((emp, i) => {
                 const currentlySelectedInOtherDropdowns = newTeam.employees.filter((_, idx) => idx !== i).map(e => e.email);
@@ -976,7 +1067,7 @@ function DashboardContent() {
             <div className={`p-4 md:p-6 overflow-y-auto max-h-[60vh] ${customScrollbar}`}>
               <div className="flex justify-between mb-2">
                 <label className={`text-xs font-bold ${theme.textSub}`}>Assign Employees</label>
-                <button onClick={() => setEditingTeam({ ...editingTeam, employees: [...editingTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Employees</button>
+                <button onClick={() => setEditingTeam({ ...editingTeam, employees: [...editingTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Row</button>
               </div>
               {editingTeam.employees.map((emp: any, i: number) => {
                 const assignedInOtherTeams = teams.filter((t: any) => t._id !== editingTeam._id).flatMap((t: any) => t.employees.map((e: any) => e.email));
