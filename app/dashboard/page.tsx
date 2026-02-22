@@ -8,7 +8,7 @@ import {
   MessageSquare, LogOut, Phone, MessageCircle, Calendar, User, IndianRupee, Save,
   Network, Plus, UserCheck, X, Ticket, ChevronLeft, Send, Mic, Star, Moon, Sun,
   MapPin, Mail, Edit3, CheckCircle2, Clock, Trash2, ClipboardList, Search, Filter,
-  ShoppingCart, Package
+  ShoppingCart, Package, UserPlus, Video, Upload
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
@@ -34,62 +34,19 @@ const getFormattedCurrentDate = () => {
 // --- DYNAMIC STATUS BADGE COLORS ---
 const getStatusStyles = (status: string, isDarkMode: boolean) => {
   switch (status) {
-    case 'RNR':
-      return isDarkMode ? 'bg-red-900/30 text-red-400 border-red-500/30' : 'bg-red-100 text-red-800 border-red-200';
-    case 'Interested':
-      return isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-600' : 'bg-gray-100 text-gray-800 border-gray-200';
-    case 'Site visit Scheduled':
-      return isDarkMode ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'Site Visit Done':
-      return isDarkMode ? 'bg-blue-900/30 text-blue-400 border-blue-500/30' : 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'Proposal Shared':
-      return isDarkMode ? 'bg-pink-900/30 text-pink-400 border-pink-500/30' : 'bg-pink-100 text-pink-800 border-pink-200';
-    case 'Negotiation Stage':
-      return isDarkMode ? 'bg-purple-900/30 text-purple-400 border-purple-500/30' : 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'Partial Payment Received':
-      return isDarkMode ? 'bg-green-900/30 text-green-400 border-green-500/30' : 'bg-green-100 text-green-800 border-green-200';
-    case 'Proposal Preparation':
-      return isDarkMode ? 'bg-teal-900/30 text-teal-400 border-teal-500/30' : 'bg-teal-100 text-teal-800 border-teal-200';
-    default:
-      return isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-600' : 'bg-gray-100 text-gray-800 border-gray-200';
+    case 'RNR': return isDarkMode ? 'bg-red-900/30 text-red-400 border-red-500/30' : 'bg-red-100 text-red-800 border-red-200';
+    case 'Interested': return isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-600' : 'bg-gray-100 text-gray-800 border-gray-200';
+    case 'Site visit Scheduled': return isDarkMode ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'Site Visit Done': return isDarkMode ? 'bg-blue-900/30 text-blue-400 border-blue-500/30' : 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'Proposal Shared': return isDarkMode ? 'bg-pink-900/30 text-pink-400 border-pink-500/30' : 'bg-pink-100 text-pink-800 border-pink-200';
+    case 'Negotiation Stage': return isDarkMode ? 'bg-purple-900/30 text-purple-400 border-purple-500/30' : 'bg-purple-100 text-purple-800 border-purple-200';
+    case 'Partial Payment Received': return isDarkMode ? 'bg-green-900/30 text-green-400 border-green-500/30' : 'bg-green-100 text-green-800 border-green-200';
+    case 'Proposal Preparation': return isDarkMode ? 'bg-teal-900/30 text-teal-400 border-teal-500/30' : 'bg-teal-100 text-teal-800 border-teal-200';
+    default: return isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-600' : 'bg-gray-100 text-gray-800 border-gray-200';
   }
 };
 
-// Sample data for charts
-const revenueData = [
-  { name: 'Jan', revenue: 4000 },
-  { name: 'Feb', revenue: 3000 },
-  { name: 'Mar', revenue: 5000 },
-  { name: 'Apr', revenue: 2780 },
-  { name: 'May', revenue: 1890 },
-  { name: 'Jun', revenue: 2390 },
-  { name: 'Jul', revenue: 3490 },
-];
-
-const orderStatusData = [
-  { name: 'Completed', value: 400 },
-  { name: 'Pending', value: 300 },
-  { name: 'Cancelled', value: 100 },
-];
-
-const COLORS = ['#10B981', '#FBBF24', '#EF4444'];
-
-// Sample data for tables
-const recentOrders = [
-  { id: '#ORD-001', customer: 'John Doe', status: 'Completed', amount: '₹2,499' },
-  { id: '#ORD-002', customer: 'Jane Smith', status: 'Pending', amount: '₹1,299' },
-  { id: '#ORD-003', customer: 'Bob Johnson', status: 'Cancelled', amount: '₹4,999' },
-  { id: '#ORD-004', customer: 'Alice Brown', status: 'Completed', amount: '₹3,499' },
-  { id: '#ORD-005', customer: 'Charlie Wilson', status: 'Pending', amount: '₹999' },
-];
-
-const topProducts = [
-  { name: 'Wireless Earbuds', price: '₹2,499', sold: 120 },
-  { name: 'Smart Watch', price: '₹4,999', sold: 85 },
-  { name: 'Bluetooth Speaker', price: '₹1,299', sold: 64 },
-  { name: 'Laptop Stand', price: '₹999', sold: 52 },
-  { name: 'Gaming Mouse', price: '₹3,499', sold: 41 },
-];
+const CHART_COLORS = ['#8B5CF6', '#10B981', '#FBBF24', '#EF4444', '#EC4899', '#06B6D4', '#3B82F6', '#F97316'];
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -139,15 +96,10 @@ function DashboardContent() {
 
   // Auto-scroll ref for History
   const historyEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = () => historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
   useEffect(() => {
-    if (selectedLead) {
-      scrollToBottom();
-    }
+    if (selectedLead) scrollToBottom();
   }, [selectedLead?.followUps]);
 
   let myTeamLead = "Unassigned";
@@ -175,19 +127,11 @@ function DashboardContent() {
     yellowText: isDarkMode ? 'text-yellow-400' : 'text-yellow-700',
     alertBg: isDarkMode ? 'bg-[#3B1F1F]' : 'bg-red-50',
     alertText: isDarkMode ? 'text-[#F28B82]' : 'text-red-700',
-    primary: 'bg-purple-600',
-    primaryHover: 'hover:bg-purple-700',
     iconBg: isDarkMode ? 'bg-[#2D2E30]' : 'bg-gray-100',
   };
 
-  const customScrollbar = `
-    [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2
-    [&::-webkit-scrollbar-track]:bg-transparent
-    [&::-webkit-scrollbar-thumb]:rounded-full
-    ${isDarkMode ? '[&::-webkit-scrollbar-thumb]:bg-[#3C4043] hover:[&::-webkit-scrollbar-thumb]:bg-[#5F6368]' : '[&::-webkit-scrollbar-thumb]:bg-[#DADCE0] hover:[&::-webkit-scrollbar-thumb]:bg-[#9AA0A6]'}
-  `;
+  const customScrollbar = `[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full ${isDarkMode ? '[&::-webkit-scrollbar-thumb]:bg-[#3C4043] hover:[&::-webkit-scrollbar-thumb]:bg-[#5F6368]' : '[&::-webkit-scrollbar-thumb]:bg-[#DADCE0] hover:[&::-webkit-scrollbar-thumb]:bg-[#9AA0A6]'}`;
 
-  // --- DATE FORMATTING HELPERS ---
   const formatDisplayDate = (dateString: string) => {
     if (!dateString) return '';
     if (dateString.includes('-') && dateString.length === 10) {
@@ -317,14 +261,10 @@ function DashboardContent() {
     } catch (err) { alert("Error adding follow up"); }
   };
 
-  // --- SUBMIT SALESFORM ---
   const handleSubmitSalesform = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLead) return;
-
-    // Format the questionnaire into a neat history log text
     const formattedText = `📝 Detailed Salesform Submitted:\n• Property Type: ${salesForm.propertyType || 'N/A'}\n• Location: ${salesForm.preferredLocation || 'N/A'}\n• Budget: ${salesForm.budget || 'N/A'}\n• Use Type: ${salesForm.typeOfUse}\n• Purchase Date: ${salesForm.purchaseDate || 'N/A'}\n• Decision Maker: ${salesForm.decisionMaker}\n• Loan Planned: ${salesForm.loan}${salesForm.loan === 'Yes' ? ` (${salesForm.loanType})` : ''}\n• Site Visit Requested: ${salesForm.scheduleVisit}`;
-
     const followUp = { author: name, text: formattedText, time: getFormattedCurrentDate() };
     try {
       const res = await fetch('/api/leads', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId: selectedLead._id, followUp, updateData: { lastEditedAt: getFormattedCurrentDate() } }) });
@@ -338,7 +278,6 @@ function DashboardContent() {
     } catch (err) { alert("Error submitting salesform"); }
   };
 
-  // --- TEAM HANDLERS ---
   const handleSaveNewTeam = async () => {
     if (!newTeam.tlEmail) return alert("Select a Team Lead!");
     const tlUser = registeredUsers.find((u: any) => u.email === newTeam.tlEmail);
@@ -381,16 +320,32 @@ function DashboardContent() {
   };
 
   const handleLogout = () => { sessionStorage.removeItem('loginTime'); router.push('/'); };
-  const hours = Math.floor(workingMinutes / 60);
-  const minutes = workingMinutes % 60;
 
+  // --- DYNAMIC DATA AGGREGATION FOR DASHBOARD ---
   const activeTickets = leadsList.filter((lead: any) => !lead.isSolved);
-
-  // LOGIC FOR TICKET PERMISSIONS
+  const solvedTicketsCount = leadsList.filter((l:any) => l.isSolved).length;
   const canEditOrSolve = isAdmin || (selectedLead?.employeeName === name);
-
   const alreadyAssignedEmails = teams.flatMap((team: any) => team.employees.map((emp: any) => emp.email));
   const baseAvailableEmployees = registeredUsers.filter((user: any) => !alreadyAssignedEmails.includes(user.email) && user.email !== newTeam.tlEmail);
+
+  // Dynamic Pie Chart Data (Count leads by status)
+  const statusCounts = leadsList.reduce((acc: any, lead: any) => {
+    acc[lead.callStatus] = (acc[lead.callStatus] || 0) + 1;
+    return acc;
+  }, {});
+  const dynamicStatusData = Object.keys(statusCounts).map(key => ({
+    name: key, value: statusCounts[key]
+  }));
+
+  // Dynamic Bar Chart Data (Count leads by budget - simple mock aggregation)
+  const budgetCounts = leadsList.reduce((acc: any, lead: any) => {
+    const b = lead.budget || 'Unknown';
+    acc[b] = (acc[b] || 0) + 1;
+    return acc;
+  }, {});
+  const dynamicBudgetData = Object.keys(budgetCounts).map(key => ({
+    name: key, total: budgetCounts[key]
+  }));
 
   return (
     <div className={`flex flex-col md:flex-row h-screen transition-colors duration-300 ${theme.bg} font-sans`}>
@@ -424,19 +379,9 @@ function DashboardContent() {
             <h1 className={`font-semibold flex items-center text-lg md:text-base ${theme.textMain}`}>
               <span className="hidden sm:inline">BhoomiDwellers</span> CRM <span className={`hidden md:inline text-sm font-normal px-2 ${theme.textSub}`}>- Workspace</span>
             </h1>
-            {isAdmin && (
-              <button onClick={() => setIsAddTeamModalOpen(true)} className={`hidden sm:flex cursor-pointer ml-4 items-center px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${theme.brandSoftBg} ${theme.brandText} border-purple-500/30 hover:bg-purple-600 hover:text-white`}>
-                <Plus className="w-4 h-4 mr-1" /> Add Team
-              </button>
-            )}
           </div>
 
           <div className="flex items-center space-x-3 md:space-x-5 relative">
-            {isAdmin && (
-              <button onClick={() => setIsAddTeamModalOpen(true)} className={`sm:hidden p-2 rounded-full cursor-pointer transition-colors ${theme.brandSoftBg} ${theme.brandText}`}>
-                <Plus className="w-5 h-5 cursor-pointer" />
-              </button>
-            )}
             <button onClick={() => setIsDarkMode(!isDarkMode)} className={`cursor-pointer p-2 rounded-full transition-all duration-300 ${isDarkMode ? 'bg-[#28292A] text-yellow-400 hover:bg-[#3C4043]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} title="Toggle Theme">
               {isDarkMode ? <Sun className="w-5 h-5 cursor-pointer" /> : <Moon className="w-5 h-5 cursor-pointer" />}
             </button>
@@ -466,218 +411,216 @@ function DashboardContent() {
 
           {/* VIEW 1: OVERVIEW */}
           {activeView === 'overview' && (
-            <div className="animate-fadeIn space-y-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <h2 className={`text-2xl font-bold ${theme.textMain}`}>Dashboard</h2>
-                  <p className={`text-sm ${theme.textSub}`}>Overview of your business performance.</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                  <div className={`relative flex items-center w-full sm:w-auto ${theme.card} rounded-lg border ${theme.divider} px-3 py-2`}>
-                    <Search className={`w-5 h-5 ${theme.textSub} mr-2`} />
-                    <input type="text" placeholder="Search..." className={`bg-transparent outline-none text-sm ${theme.inputText} placeholder:${theme.textSub}`} />
+            <div className="animate-fadeIn space-y-8">
+              
+              {/* GET STARTED HERO SECTION */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h2 className={`text-xl md:text-2xl font-bold ${theme.textMain}`}>Hi, <span className="font-semibold">{name}</span></h2>
+                    <h3 className={`text-lg font-bold mt-4 ${theme.textMain}`}>Get started</h3>
                   </div>
-                  <button className={`flex items-center justify-center gap-2 px-4 py-2 ${theme.card} rounded-lg border ${theme.divider} ${theme.textMain} hover:${theme.hoverBg} transition-colors`}>
-                    <Calendar className="w-5 h-5" />
-                    <span className="text-sm font-medium">Date Range</span>
-                  </button>
-                  <button className={`flex items-center justify-center gap-2 px-4 py-2 ${theme.card} rounded-lg border ${theme.divider} ${theme.textMain} hover:${theme.hoverBg} transition-colors`}>
-                    <Filter className="w-5 h-5" />
-                    <span className="text-sm font-medium">Filter</span>
+                  <button className="text-purple-600 text-sm font-semibold flex items-center hover:underline cursor-pointer">
+                    <Video className="w-4 h-4 mr-1" /> <span className="hidden sm:inline">Setup Guide</span>
                   </button>
                 </div>
-              </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Action 1: Add Team (Admin Only) */}
+                  {isAdmin && (
+                    <div className={`p-6 rounded-2xl border flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1 shadow-sm ${theme.card} ${theme.divider}`}>
+                       <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+                         <Users className="w-6 h-6" />
+                       </div>
+                       <h4 className={`font-bold mb-1 ${theme.textMain}`}>Add Team</h4>
+                       <p className={`text-xs mb-5 h-8 ${theme.textSub}`}>Collaborate with team at one location</p>
+                       <button onClick={() => setIsAddTeamModalOpen(true)} className="cursor-pointer px-6 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white text-sm font-bold rounded-full transition-colors w-full">+ Add Team</button>
+                    </div>
+                  )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Total Revenue</p>
-                      <h3 className={`text-2xl font-bold ${theme.textMain}`}>₹45,231.89</h3>
-                    </div>
-                    <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.textMain}`}>
-                      <IndianRupee className="w-6 h-6" />
-                    </div>
+                  {/* Action 2: Add Lead */}
+                  <div className={`p-6 rounded-2xl border flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1 shadow-sm ${theme.card} ${theme.divider}`}>
+                     <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                       <UserPlus className="w-6 h-6" />
+                     </div>
+                     <h4 className={`font-bold mb-1 ${theme.textMain}`}>Lead</h4>
+                     <p className={`text-xs mb-5 h-8 ${theme.textSub}`}>Connect with potential customers</p>
+                     <button onClick={() => { setActiveView('leads'); setIsAddLeadModalOpen(true); }} className="cursor-pointer px-6 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white text-sm font-bold rounded-full transition-colors w-full">+ Add site visit</button>
                   </div>
-                  <p className="text-sm text-green-500 flex items-center">
-                    <span className="font-medium">+20.1%</span>
-                    <span className={`ml-2 ${theme.textSub}`}>from last month</span>
-                  </p>
-                </div>
-                <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Total Orders</p>
-                      <h3 className={`text-2xl font-bold ${theme.textMain}`}>+2350</h3>
-                    </div>
-                    <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.textMain}`}>
-                      <ShoppingCart className="w-6 h-6" />
-                    </div>
+
+                  {/* Action 3: Reports */}
+                  <div className={`p-6 rounded-2xl border flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1 shadow-sm ${theme.card} ${theme.divider}`}>
+                     <div className="w-12 h-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
+                       <BarChart3 className="w-6 h-6" />
+                     </div>
+                     <h4 className={`font-bold mb-1 ${theme.textMain}`}>Report</h4>
+                     <p className={`text-xs mb-5 h-8 ${theme.textSub}`}>Analyse your performance</p>
+                     <button onClick={() => document.getElementById('reports-section')?.scrollIntoView({behavior: 'smooth'})} className="cursor-pointer px-6 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white text-sm font-bold rounded-full transition-colors w-full">Check reports</button>
                   </div>
-                  <p className="text-sm text-green-500 flex items-center">
-                    <span className="font-medium">+180.1%</span>
-                    <span className={`ml-2 ${theme.textSub}`}>from last month</span>
-                  </p>
-                </div>
-                <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Total Customers</p>
-                      <h3 className={`text-2xl font-bold ${theme.textMain}`}>+12,234</h3>
-                    </div>
-                    <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.textMain}`}>
-                      <Users className="w-6 h-6" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-green-500 flex items-center">
-                    <span className="font-medium">+19%</span>
-                    <span className={`ml-2 ${theme.textSub}`}>from last month</span>
-                  </p>
-                </div>
-                <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Total Products</p>
-                      <h3 className={`text-2xl font-bold ${theme.textMain}`}>+573</h3>
-                    </div>
-                    <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.textMain}`}>
-                      <Package className="w-6 h-6" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-green-500 flex items-center">
-                    <span className="font-medium">+201</span>
-                    <span className={`ml-2 ${theme.textSub}`}>since last hour</span>
-                  </p>
                 </div>
               </div>
 
+              {/* REAL CRM METRICS */}
+              <div>
+                <h3 className={`text-lg font-bold mb-4 ${theme.textMain}`} id="reports-section">Current Data Reports</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                  <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Total Leads</p>
+                        <h3 className={`text-3xl font-bold ${theme.textMain}`}>{leadsList.length}</h3>
+                      </div>
+                      <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.textMain}`}><Users className="w-6 h-6" /></div>
+                    </div>
+                  </div>
+                  <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Active Site Visits</p>
+                        <h3 className={`text-3xl font-bold text-yellow-500`}>{activeTickets.length}</h3>
+                      </div>
+                      <div className={`p-3 rounded-xl ${theme.iconBg} text-yellow-500`}><Ticket className="w-6 h-6" /></div>
+                    </div>
+                  </div>
+                  <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Solved Tickets</p>
+                        <h3 className={`text-3xl font-bold text-green-500`}>{solvedTicketsCount}</h3>
+                      </div>
+                      <div className={`p-3 rounded-xl ${theme.iconBg} text-green-500`}><CheckCircle2 className="w-6 h-6" /></div>
+                    </div>
+                  </div>
+                  <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className={`text-sm font-medium ${theme.textSub} mb-1`}>Active Teams</p>
+                        <h3 className={`text-3xl font-bold text-purple-500`}>{teams.length}</h3>
+                      </div>
+                      <div className={`p-3 rounded-xl ${theme.iconBg} text-purple-500`}><Network className="w-6 h-6" /></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* REAL CRM CHARTS */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                
+                {/* Leads by Budget Chart */}
                 <div className={`col-span-2 p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <h3 className={`text-lg font-bold mb-4 ${theme.textMain}`}>Revenue Over Time</h3>
+                  <h3 className={`text-lg font-bold mb-4 ${theme.textMain}`}>Leads by Budget Map</h3>
                   <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={revenueData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#374151' : '#e5e7eb'} />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#9CA3AF' : '#6B7280' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#9CA3AF' : '#6B7280' }} tickFormatter={(value: any) => `₹${value}`} />
-                        <RechartsTooltip
-                          contentStyle={{ backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF', borderColor: isDarkMode ? '#374151' : '#E5E7EB', color: isDarkMode ? '#FFFFFF' : '#000000' }}
-                          itemStyle={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
-                          formatter={(value: any) => [`₹${value}`, 'Revenue']}
-                        />
-                        <Bar dataKey="revenue" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {dynamicBudgetData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={dynamicBudgetData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#374151' : '#e5e7eb'} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#9CA3AF' : '#6B7280' }} />
+                          <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#9CA3AF' : '#6B7280' }} />
+                          <RechartsTooltip
+                            contentStyle={{ backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF', borderColor: isDarkMode ? '#374151' : '#E5E7EB', color: isDarkMode ? '#FFFFFF' : '#000000', borderRadius: '8px' }}
+                            itemStyle={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
+                            formatter={(value: any) => [value, 'Total Leads']}
+                          />
+                          <Bar dataKey="total" fill="#8B5CF6" radius={[4, 4, 0, 0]} barSize={50} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center"><p className={theme.textSub}>No data available yet.</p></div>
+                    )}
                   </div>
                 </div>
 
+                {/* Leads Status Distribution */}
                 <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <h3 className={`text-lg font-bold mb-4 ${theme.textMain}`}>Orders Status</h3>
+                  <h3 className={`text-lg font-bold mb-4 ${theme.textMain}`}>Lead Status Tracking</h3>
                   <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={orderStatusData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {orderStatusData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip
-                          contentStyle={{ backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF', borderColor: isDarkMode ? '#374151' : '#E5E7EB', color: isDarkMode ? '#FFFFFF' : '#000000' }}
-                          itemStyle={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
-                        />
-                        <Legend
-                          layout="horizontal"
-                          verticalAlign="bottom"
-                          align="center"
-                          wrapperStyle={{ paddingTop: '20px' }}
-                          formatter={(value: any) => <span className={theme.textMain}>{value}</span>}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {dynamicStatusData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={dynamicStatusData}
+                            cx="50%"
+                            cy="45%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {dynamicStatusData.map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip
+                            contentStyle={{ backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF', borderColor: isDarkMode ? '#374151' : '#E5E7EB', color: isDarkMode ? '#FFFFFF' : '#000000', borderRadius: '8px' }}
+                            itemStyle={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}
+                          />
+                          <Legend
+                            layout="horizontal"
+                            verticalAlign="bottom"
+                            align="center"
+                            wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+                            formatter={(value: any) => <span className={theme.textMain}>{value}</span>}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center"><p className={theme.textSub}>No data available yet.</p></div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                <div className={`col-span-2 p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className={`text-lg font-bold ${theme.textMain}`}>Recent Orders</h3>
-                    <button className={`text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors`}>View All</button>
-                  </div>
-                  <div className={`overflow-x-auto ${customScrollbar}`}>
-                    <table className="w-full text-left border-collapse min-w-[600px]">
-                      <thead>
-                        <tr className={`border-b ${theme.divider}`}>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Order ID</th>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Customer</th>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Status</th>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub} text-right`}>Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className={`divide-y ${theme.divider}`}>
-                        {recentOrders.map((order: any) => (
-                          <tr key={order.id} className={`hover:${theme.hoverBg} transition-colors`}>
-                            <td className={`px-4 py-3 text-sm font-medium ${theme.textMain}`}>{order.id}</td>
-                            <td className={`px-4 py-3 text-sm ${theme.textMain}`}>{order.customer}</td>
-                            <td className="px-4 py-3 text-sm">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                                ${order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                  order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'}`}>
-                                {order.status}
-                              </span>
-                            </td>
-                            <td className={`px-4 py-3 text-sm font-medium ${theme.textMain} text-right`}>{order.amount}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+              {/* RECENT TICKETS TABLE */}
+              <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className={`text-lg font-bold ${theme.textMain}`}>Recent Leads Added</h3>
+                  <button onClick={() => setActiveView('database')} className={`cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors`}>View Database</button>
                 </div>
-
-                <div className={`p-6 rounded-2xl shadow-sm border ${theme.card} ${theme.divider}`}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className={`text-lg font-bold ${theme.textMain}`}>Top Products</h3>
-                    <button className={`text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors`}>View All</button>
-                  </div>
-                  <div className={`overflow-x-auto ${customScrollbar}`}>
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className={`border-b ${theme.divider}`}>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Product Name</th>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub} text-right`}>Price</th>
-                          <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub} text-right`}>Sold</th>
+                <div className={`overflow-x-auto ${customScrollbar}`}>
+                  <table className="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className={`border-b ${theme.divider}`}>
+                        <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Ticket ID</th>
+                        <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Client</th>
+                        <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Assignee</th>
+                        <th className={`px-4 py-3 text-xs font-semibold uppercase ${theme.textSub}`}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${theme.divider}`}>
+                      {leadsList.slice(0, 5).map((lead: any) => (
+                        <tr key={lead._id} className={`hover:${theme.hoverBg} transition-colors`}>
+                          <td className={`px-4 py-3 text-sm font-bold ${theme.brandText}`}>{lead.ticketId}</td>
+                          <td className={`px-4 py-3 text-sm font-medium ${theme.textMain}`}>{lead.name}</td>
+                          <td className={`px-4 py-3 text-sm ${theme.textMain}`}>{lead.employeeName}</td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusStyles(lead.callStatus, isDarkMode)}`}>
+                              {lead.callStatus}
+                            </span>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className={`divide-y ${theme.divider}`}>
-                        {topProducts.map((product: any, index: number) => (
-                          <tr key={index} className={`hover:${theme.hoverBg} transition-colors`}>
-                            <td className={`px-4 py-3 text-sm font-medium ${theme.textMain}`}>{product.name}</td>
-                            <td className={`px-4 py-3 text-sm ${theme.textMain} text-right`}>{product.price}</td>
-                            <td className={`px-4 py-3 text-sm ${theme.textMain} text-right`}>{product.sold}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                      {leadsList.length === 0 && <tr><td colSpan={4} className={`px-4 py-4 text-center text-sm ${theme.textSub}`}>No recent tickets found.</td></tr>}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
             </div>
           )}
 
           {/* VIEW 2: TEAMS */}
           {activeView === 'teams' && (
             <div className="max-w-5xl mx-auto animate-fadeIn">
-              <h1 className={`text-xl md:text-2xl font-bold mb-4 md:mb-6 ${theme.textMain}`}>Teams & Hierarchy</h1>
+              <div className="flex justify-between items-center mb-6">
+                <h1 className={`text-xl md:text-2xl font-bold ${theme.textMain}`}>Teams & Hierarchy</h1>
+                {isAdmin && (
+                  <button onClick={() => setIsAddTeamModalOpen(true)} className="cursor-pointer px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center">
+                    <Plus className="w-4 h-4 mr-2" /> Create Team
+                  </button>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {teams.map((team: any) => (
                   <div key={team._id} className={`rounded-xl shadow-sm border overflow-hidden transition-colors ${theme.card} ${theme.divider}`}>
@@ -738,7 +681,7 @@ function DashboardContent() {
                             )}
                           </td>
                           <td className="px-4 md:px-6 py-3 md:py-4 text-sm">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(lead.callStatus, isDarkMode)}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusStyles(lead.callStatus, isDarkMode)}`}>
                               {lead.callStatus}
                             </span>
                           </td>
@@ -772,7 +715,7 @@ function DashboardContent() {
                           <span className={`text-xs font-bold px-2 py-1 rounded-md ${theme.brandSoftBg} ${theme.brandText}`}>
                             {lead.ticketId || `TKT-${lead._id ? lead._id.toString().slice(-4).toUpperCase() : 'OLD'}`}
                           </span>
-                          <span className={`text-[10px] px-1.5 py-0.5 border rounded-full ${getStatusStyles(lead.callStatus, isDarkMode)}`}>{lead.callStatus}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 border rounded-full ${getStatusStyles(lead.callStatus, isDarkMode)}`}>{lead.callStatus}</span>
                         </div>
                         <h3 className={`text-lg md:text-xl font-bold mt-1 ${theme.textMain} truncate`}>{lead.name}</h3>
                         <p className={`text-xs md:text-sm mb-4 ${theme.textSub} truncate`}>{lead.phone}</p>
@@ -794,7 +737,7 @@ function DashboardContent() {
                   </div>
                 </>
               ) : (
-                <div className={`flex flex-col rounded-2xl shadow-sm border overflow-hidden transition-colors ${theme.card} ${theme.divider}`}>
+                <div className={`flex flex-col flex-1 rounded-2xl shadow-sm border overflow-hidden transition-colors ${theme.card} ${theme.divider}`}>
 
                   <div className={`border-b p-3 md:p-4 flex justify-between items-center ${theme.inputBg} ${theme.divider}`}>
                     <div className="flex items-center overflow-hidden">
@@ -810,7 +753,6 @@ function DashboardContent() {
                     </div>
 
                     <div className="flex space-x-1.5 md:space-x-3 items-center flex-shrink-0">
-                      {/* CONDITIONAL RENDER FOR ACTION BUTTONS */}
                       {canEditOrSolve && (
                         <>
                           {!isSalesformOpen ? (
@@ -841,8 +783,8 @@ function DashboardContent() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row md:flex-1 md:overflow-hidden">
-                    <div className={`w-full md:w-7/12 p-4 md:p-8 border-b md:border-b-0 md:border-r md:overflow-y-auto ${theme.divider} ${customScrollbar}`}>
+                  <div className={`flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden ${customScrollbar}`}>
+                    <div className={`w-full md:w-7/12 flex-shrink-0 md:flex-shrink p-4 md:p-8 border-b md:border-b-0 md:border-r md:overflow-y-auto ${theme.divider} ${customScrollbar}`}>
 
                       {!isEditingTicket && !isSalesformOpen && (
                         <div className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 mb-6 rounded-xl border ${theme.brandSoftBg} border-purple-500/20`}>
@@ -998,8 +940,8 @@ function DashboardContent() {
                 <label className={`text-xs font-bold ${theme.textSub}`}>Assign Employees</label>
                 <button onClick={() => setNewTeam({ ...newTeam, employees: [...newTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Row</button>
               </div>
-              {newTeam.employees.map((emp: any, i: number) => {
-                const currentlySelectedInOtherDropdowns = newTeam.employees.filter((_: any, idx: number) => idx !== i).map((e: any) => e.email);
+              {newTeam.employees.map((emp, i) => {
+                const currentlySelectedInOtherDropdowns = newTeam.employees.filter((_, idx) => idx !== i).map(e => e.email);
                 const dropdownOptions = baseAvailableEmployees.filter((user: any) => !currentlySelectedInOtherDropdowns.includes(user.email));
                 return (
                   <div key={i} className="flex space-x-2 mb-2">
@@ -1008,7 +950,7 @@ function DashboardContent() {
                       {dropdownOptions.map((u: any) => <option key={u.email} value={u.email}>{u.name}</option>)}
                     </select>
                     {newTeam.employees.length > 1 && (
-                      <button onClick={() => { const emps = newTeam.employees.filter((_: any, idx: number) => idx !== i); setNewTeam({ ...newTeam, employees: emps }) }} className={`cursor-pointer p-2.5 md:p-3 border rounded-lg transition-colors ${theme.inputBg} ${theme.inputBorder} ${theme.textSub} hover:text-red-500`}>
+                      <button onClick={() => { const emps = newTeam.employees.filter((_, idx) => idx !== i); setNewTeam({ ...newTeam, employees: emps }) }} className={`cursor-pointer p-2.5 md:p-3 border rounded-lg transition-colors ${theme.inputBg} ${theme.inputBorder} ${theme.textSub} hover:text-red-500`}>
                         <X className="w-4 h-4 md:w-5 md:h-5 cursor-pointer" />
                       </button>
                     )}
