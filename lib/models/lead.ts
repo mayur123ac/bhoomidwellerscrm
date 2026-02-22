@@ -11,20 +11,25 @@ const LeadSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true },
   
-  // --- NEW FIELDS ADDED ---
   clientEmail: { type: String },
+  alternatePhone: { type: String },
+  preferredLocation: { type: String },
+  typeOfUse: { type: String },
+  approxPurchaseDate: { type: String },
+  siteVisitNeeded: { type: String },
   clientAddress: { type: String },
   siteAddress: { type: String },
-  lastEditedAt: { type: String },
-  isSolved: { type: Boolean, default: false }, // Solved Ticket Logic
-  // ------------------------
   
   budget: { type: String },
   schedule: { type: String }, 
   date: { type: String }, 
+  
   employeeName: { type: String, required: true },
   teamLead: { type: String, default: 'Unassigned' },
   callStatus: { type: String, default: 'Pending' },
+  lastEditedAt: { type: String },
+  isSolved: { type: Boolean, default: false },
+  
   followUps: [FollowUpSchema]
 }, { timestamps: true });
 
