@@ -928,40 +928,50 @@ function DashboardContent() {
                           onClick={async () => {
                             if (!selectedLead?.phone) return alert("No phone number found!");
                             
-                            // Open Call UI immediately
                             setCallStatus('Calling');
                             setIsCallOverlayOpen(true);
                             
                             try {
+                              // 1. Fetch token and check for server errors
                               const res = await fetch('/api/token');
+                              if (!res.ok) {
+                                const errText = await res.text();
+                                throw new Error(`Backend Error (${res.status}): ${errText}`);
+                              }
+                              
                               const data = await res.json();
+                              if (!data.token) {
+                                throw new Error("Backend did not return a Twilio token.");
+                              }
 
+                              // 2. Initialize Device
                               const { Device } = await import('@twilio/voice-sdk');
                               const device = new Device(data.token);
                               await device.register();
                               deviceRef.current = device;
 
+                              // 3. Format Phone
                               let formattedPhone = selectedLead.phone.replace(/\s+/g, '').replace(/-/g, '');
                               if (!formattedPhone.startsWith('+')) {
                                 formattedPhone = formattedPhone.startsWith('0') ? `+91${formattedPhone.substring(1)}` : `+91${formattedPhone}`;
                               }
 
+                              // 4. Connect
                               const call = await device.connect({ params: { To: formattedPhone } });
 
                               call.on('accept', () => setCallStatus('In Progress'));
                               call.on('disconnect', () => {
                                 setCallStatus('Idle');
-                                setTimeout(() => setIsCallOverlayOpen(false), 2000); // close overlay shortly after hangup
+                                setTimeout(() => setIsCallOverlayOpen(false), 2000);
                               });
                               call.on('error', (err: any) => {
-                                alert(`Call failed: ${err.message}`);
-                                setCallStatus('Idle');
-                                setIsCallOverlayOpen(false);
+                                throw new Error(`Twilio Call Error: ${err.message}`);
                               });
 
-                            } catch (err) {
-                              console.error(err);
-                              alert("Failed to access microphone or connect to Twilio.");
+                            } catch (err: any) {
+                              console.error("Full Error:", err);
+                              // THIS WILL NOW SHOW THE EXACT REASON IT FAILED
+                              alert(`Failed to connect: ${err.message}`); 
                               setCallStatus('Idle');
                               setIsCallOverlayOpen(false);
                             }
