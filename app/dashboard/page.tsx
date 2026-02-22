@@ -79,7 +79,7 @@ function DashboardContent() {
   // Search Query State
   const [searchQuery, setSearchQuery] = useState('');
 
-  // --- NEW: TWILIO BROWSER PHONE STATES ---
+  // --- TWILIO BROWSER PHONE STATES ---
   const [callStatus, setCallStatus] = useState('Idle'); // 'Idle', 'Calling', 'In Progress'
   const deviceRef = useRef<any>(null); // Holds the active Twilio call session
 
@@ -916,7 +916,7 @@ function DashboardContent() {
 
                                 // 2. Initialize the Twilio Browser Phone
                                 const { Device } = await import('@twilio/voice-sdk');
-                                const device = new Device(data.token, { codecPreferences: ['opus', 'pcmu'] });
+                                const device = new Device(data.token);
                                 await device.register();
                                 deviceRef.current = device;
 
