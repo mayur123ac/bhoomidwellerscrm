@@ -938,7 +938,7 @@ function DashboardContent() {
               </select>
               <div className="flex justify-between mb-2">
                 <label className={`text-xs font-bold ${theme.textSub}`}>Assign Employees</label>
-                <button onClick={() => setNewTeam({ ...newTeam, employees: [...newTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Row</button>
+                <button onClick={() => setNewTeam({ ...newTeam, employees: [...newTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Employees</button>
               </div>
               {newTeam.employees.map((emp, i) => {
                 const currentlySelectedInOtherDropdowns = newTeam.employees.filter((_, idx) => idx !== i).map(e => e.email);
@@ -976,7 +976,7 @@ function DashboardContent() {
             <div className={`p-4 md:p-6 overflow-y-auto max-h-[60vh] ${customScrollbar}`}>
               <div className="flex justify-between mb-2">
                 <label className={`text-xs font-bold ${theme.textSub}`}>Assign Employees</label>
-                <button onClick={() => setEditingTeam({ ...editingTeam, employees: [...editingTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Row</button>
+                <button onClick={() => setEditingTeam({ ...editingTeam, employees: [...editingTeam.employees, { email: '' }] })} className="cursor-pointer text-xs text-purple-500 font-bold">+ Add Employees</button>
               </div>
               {editingTeam.employees.map((emp: any, i: number) => {
                 const assignedInOtherTeams = teams.filter((t: any) => t._id !== editingTeam._id).flatMap((t: any) => t.employees.map((e: any) => e.email));
